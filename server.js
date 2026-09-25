@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 
 // Bump with each release; shown in the footer and at /health.
-const VERSION = "v9";
+const VERSION = "v10";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",

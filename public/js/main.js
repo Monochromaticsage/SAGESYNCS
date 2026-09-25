@@ -465,6 +465,70 @@
     });
   }
 
+  /* ---------- email links: offer Gmail, Outlook, app or copy ----------
+     A plain mailto link does nothing on computers with no email app set up,
+     so every email button opens this small chooser instead. */
+  var mailMenu = null, mailLast = null;
+  function closeMail() {
+    if (!mailMenu) return;
+    mailMenu.classList.remove("open");
+    var m = mailMenu; mailMenu = null;
+    setTimeout(function () { m.remove(); }, 200);
+    if (mailLast) mailLast.focus();
+  }
+  function openMail(href) {
+    closeMail();
+    var q = href.replace(/^mailto:/i, "").split("?");
+    var to = decodeURIComponent(q[0]);
+    var params = new URLSearchParams(q[1] || "");
+    var su = params.get("subject") || "", bd = params.get("body") || "";
+    var enc = encodeURIComponent;
+    var gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + enc(to) + (su ? "&su=" + enc(su) : "") + (bd ? "&body=" + enc(bd) : "");
+    var outlook = "https://outlook.live.com/mail/0/deeplink/compose?to=" + enc(to) + (su ? "&subject=" + enc(su) : "") + (bd ? "&body=" + enc(bd) : "");
+    var el = doc.createElement("div");
+    el.className = "mail-menu";
+    el.innerHTML =
+      '<div class="mail-card" role="dialog" aria-modal="true" aria-label="Email Sage">' +
+        '<button type="button" class="mail-x" aria-label="Close">&times;</button>' +
+        '<p class="mail-k">Email me at</p>' +
+        '<p class="mail-to"></p>' +
+        '<div class="mail-opts">' +
+          '<a class="mail-opt" target="_blank" rel="noopener" data-go="gmail">Open in Gmail</a>' +
+          '<a class="mail-opt" target="_blank" rel="noopener" data-go="outlook">Open in Outlook</a>' +
+          '<a class="mail-opt" data-go="app">Use my email app</a>' +
+          '<button type="button" class="mail-opt mail-copy">Copy address</button>' +
+        '</div>' +
+      '</div>';
+    el.querySelector(".mail-to").textContent = to;
+    el.querySelector('[data-go="gmail"]').href = gmail;
+    el.querySelector('[data-go="outlook"]').href = outlook;
+    el.querySelector('[data-go="app"]').href = href;
+    el.querySelector('[data-go="app"]').setAttribute("data-mail-direct", "");
+    el.addEventListener("click", function (e) {
+      if (e.target === el || e.target.closest(".mail-x")) { closeMail(); return; }
+      var copy = e.target.closest(".mail-copy");
+      if (copy) {
+        var done = function () { copy.textContent = "Copied"; copy.classList.add("ok"); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(to).then(done, function () { window.prompt("Copy this address:", to); });
+        else window.prompt("Copy this address:", to);
+        return;
+      }
+      if (e.target.closest(".mail-opt")) setTimeout(closeMail, 150);
+    });
+    body.appendChild(el);
+    mailMenu = el;
+    requestAnimationFrame(function () { el.classList.add("open"); });
+    el.querySelector(".mail-opt").focus();
+  }
+  doc.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="mailto:"]');
+    if (!a || a.hasAttribute("data-mail-direct") || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    mailLast = a;
+    openMail(a.getAttribute("href"));
+  });
+  doc.addEventListener("keydown", function (e) { if (e.key === "Escape") closeMail(); });
+
   /* ---------- soft fade between pages ---------- */
   if (!reduce) {
     doc.addEventListener("click", function (e) {

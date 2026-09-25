@@ -565,3 +565,20 @@ main { animation: pageIn 0.6s var(--ease) both; }
   .marquee-track { animation: none !important; }
   .shine::after { display: none; }
 }
+
+/* Email chooser */
+.mail-menu { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: 16px; background: rgba(5, 4, 31, 0.6); opacity: 0; transition: opacity 0.2s ease; }
+.mail-menu.open { opacity: 1; }
+.mail-card { position: relative; width: min(380px, 100%); padding: 28px 24px 24px; border-radius: 20px; background: #0e0a4a; border: 1px solid var(--line-strong); box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 213, 74, 0.12); transform: translateY(10px) scale(0.98); transition: transform 0.2s ease; }
+.mail-menu.open .mail-card { transform: none; }
+.mail-k { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sun); }
+.mail-to { margin: 6px 0 18px; font-size: 18px; font-weight: 600; color: #fff; word-break: break-all; }
+.mail-opts { display: grid; gap: 10px; }
+.mail-opt { display: flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line-strong); cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.mail-opt:first-child { background: var(--sun); color: #1a1340; border-color: var(--sun); }
+.mail-opt:hover, .mail-opt:focus-visible { border-color: var(--sun); color: var(--sun); outline: none; }
+.mail-opt:first-child:hover, .mail-opt:first-child:focus-visible { color: #1a1340; box-shadow: 0 0 24px rgba(255, 213, 74, 0.4); }
+.mail-opt.ok { border-color: var(--sun); color: var(--sun); }
+.mail-x { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
+.mail-x:hover { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .mail-menu, .mail-card { transition: none; } }
