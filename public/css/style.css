@@ -420,6 +420,7 @@ em { font-style: normal; color: var(--cyan); }
 .field input:focus + label, .field input:not(:placeholder-shown) + label, .field textarea:focus + label, .field textarea:not(:placeholder-shown) + label, .field select + label { translate: 0 -11px; scale: 0.78; color: var(--cyan); }
 .field .chev { position: absolute; right: 18px; top: 50%; translate: 0 -50%; pointer-events: none; color: var(--lav); }
 .submit { position: relative; width: 100%; }
+.submit .label { display: inline-flex; align-items: center; gap: 10px; }
 .submit .done-ic, .submit .busy-ic { display: none; align-items: center; gap: 10px; }
 .submit.sent .label, .submit.busy .label { display: none; }
 .submit.sent .done-ic, .submit.busy .busy-ic { display: inline-flex; }

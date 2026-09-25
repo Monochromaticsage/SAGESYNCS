@@ -418,17 +418,41 @@
       var data = { name: fd.get("name"), email: fd.get("email"), type: fd.get("type"), week: fd.get("week"), company: fd.get("company") };
       setState("busy");
       setNote("Sending your message…", "");
-      fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+      if (data.company) { setState("sent"); setNote("Thanks. Your message is in my inbox.", "ok"); form.reset(); return; }
+      var keyMeta = $('meta[name="web3forms-key"]');
+      var key = keyMeta ? keyMeta.getAttribute("content") : "";
+      if (!key || key.indexOf("__") === 0) {
+        if (window.console) console.warn("Contact form: WEB3FORMS_KEY is not set in Railway Variables.");
+        setState("idle");
+        setNote("Your message didn\u2019t send. Please <a href=\"" + mailtoFallback(data) + "\">email it to me instead</a> (sage1webdev@gmail.com).", "err");
+        return;
+      }
+      fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: key,
+          subject: "New SageSyncs enquiry from " + data.name + " (" + data.type + ")",
+          from_name: "SageSyncs website",
+          name: data.name,
+          email: data.email,
+          replyto: data.email,
+          business_type: data.type,
+          message: data.week,
+          botcheck: false
+        })
+      })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { status: r.status, body: b }; }); })
         .then(function (res) {
-          if (res.status === 200 && res.body.ok) {
+          if (res.body && res.body.success) {
             setState("sent");
             setNote("Thanks, " + String(data.name).split(" ")[0].replace(/[<>&]/g, "") + ". Your message is in my inbox and I’ll reply within 24 hours.", "ok");
             form.reset();
             return;
           }
           setState("idle");
-          if (res.status === 400) {
+          if (window.console) console.warn("Contact form: Web3Forms said", res.status, res.body && res.body.message);
+          if (res.status === 400 && !(res.body && res.body.message)) {
             setNote("Please check your name, email and message, then try again.", "err");
           } else if (res.status === 429) {
             setNote("That’s a few messages in a row. Please wait a few minutes, or email me at <a href=\"mailto:sage1webdev@gmail.com\">sage1webdev@gmail.com</a>.", "err");

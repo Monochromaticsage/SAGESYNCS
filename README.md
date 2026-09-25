@@ -62,9 +62,12 @@ server.js           Static server for Railway
 
 ## Contact form
 
-The form posts to the site's own server (`/api/contact`), which forwards
-the message to [Web3Forms](https://web3forms.com). Web3Forms emails it to
-you, with the visitor's address set as reply-to.
+The visitor's browser sends the message straight to
+[Web3Forms](https://web3forms.com), which emails it to you with the
+visitor's address set as reply-to. The server writes your access key into
+the Contact page when it is served, reading it from the `WEB3FORMS_KEY`
+variable, so the key is never stored in this repository. (Web3Forms access
+keys are designed to be used in the browser.)
 
 **One-time setup:**
 
@@ -80,5 +83,5 @@ Never commit the key to this repository.
 Until the key is set, the form says the message didn't send and offers a
 link to email it instead, so no enquiry is silently lost.
 
-Built in: a hidden spam trap, a limit of 5 messages per visitor per 10
-minutes, and a 10 KB size cap.
+Built in: a hidden spam trap. If a message fails, the browser console
+shows the reason Web3Forms gave.
