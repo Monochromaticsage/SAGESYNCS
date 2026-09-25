@@ -452,7 +452,8 @@ em { font-style: normal; color: var(--cyan); }
 .social.lg a { width: 56px; height: 56px; }
 .social svg { width: 20px; height: 20px; }
 .social.lg svg { width: 23px; height: 23px; }
-.foot-bottom { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.foot-bottom { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; }
+.foot-bottom .ver { opacity: 0.55; font-variant-numeric: tabular-nums; }
 
 /* ---------- cursor follower ---------- */
 .cursor-dot, .cursor-ring { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 9999; border-radius: 50%; opacity: 0; transition: opacity 0.25s; will-change: transform; }

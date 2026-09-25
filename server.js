@@ -9,11 +9,8 @@ const ROOT = path.join(__dirname, "public");
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 
-// Contact form: the visitor's browser sends messages straight to Web3Forms.
-// The access key lives in Railway (Service → Variables → WEB3FORMS_KEY) and is
-// written into the contact page when it is served. It is never committed.
-const WEB3FORMS_KEY = String(process.env.WEB3FORMS_KEY || "").replace(/[^A-Za-z0-9-]/g, "");
-const VERSION = "2026-09-25.8";
+// Bump with each release; shown in the footer and at /health.
+const VERSION = "v9";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -48,11 +45,6 @@ function resolve(urlPath) {
 
 function send(res, status, file) {
   const ext = path.extname(file).toLowerCase();
-  if (path.basename(file) === "contact.html") {
-    const html = fs.readFileSync(file, "utf8").replace("__WEB3FORMS_KEY__", WEB3FORMS_KEY);
-    res.writeHead(status, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff" });
-    return res.end(html);
-  }
   // HTML, CSS and JS are re-checked on every visit so updates show at once.
   // Pages link CSS/JS with a ?v= content hash, so each change is a new URL anyway.
   const cache = [".html", ".css", ".js"].includes(ext) ? "no-cache" : "public, max-age=604800";
@@ -67,14 +59,13 @@ function send(res, status, file) {
 http
   .createServer((req, res) => {
     if ((req.url || "").split("?")[0] === "/health") {
-      // Safe to share: shows which commit is live and whether the form key is set, never the key itself.
+      // Shows which release and commit are live.
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(JSON.stringify({
         status: "ok",
         version: VERSION,
         commit: String(process.env.RAILWAY_GIT_COMMIT_SHA || "").slice(0, 7) || "unknown",
-        formKeySet: WEB3FORMS_KEY.length > 0,
-        formKeyLength: WEB3FORMS_KEY.length,
+        form: "formsubmit",
       }, null, 2));
     }
     if (req.method !== "GET" && req.method !== "HEAD") {

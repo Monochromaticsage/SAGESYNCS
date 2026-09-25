@@ -62,26 +62,20 @@ server.js           Static server for Railway
 
 ## Contact form
 
-The visitor's browser sends the message straight to
-[Web3Forms](https://web3forms.com), which emails it to you with the
-visitor's address set as reply-to. The server writes your access key into
-the Contact page when it is served, reading it from the `WEB3FORMS_KEY`
-variable, so the key is never stored in this repository. (Web3Forms access
-keys are designed to be used in the browser.)
+The form on the Contact page sends messages from the visitor's browser to
+[FormSubmit](https://formsubmit.co), which emails them to
+sage1webdev@gmail.com. It needs no account, no key and no Railway variables.
 
-**One-time setup:**
+**One-time step:** the first message sent after deploying triggers an
+email from FormSubmit to sage1webdev@gmail.com with an **Activate Form**
+button. Click it once. Messages after that go straight to the inbox (check
+Spam the first time and mark it "Not spam").
 
-1. Go to [web3forms.com](https://web3forms.com), enter
-   `sage1webdev@gmail.com` and create an access key. It is emailed to you.
-2. In Railway, open the service → **Variables** → **New Variable**:
-   - Name: `WEB3FORMS_KEY`
-   - Value: the key from the email
-3. Railway redeploys. Send yourself a test message from the Contact page.
+To change the receiving address, edit the `formsubmit.co/ajax/...` URL in
+`public/js/main.js` and activate again.
 
-Never commit the key to this repository.
+## Checking what is live
 
-Until the key is set, the form says the message didn't send and offers a
-link to email it instead, so no enquiry is silently lost.
-
-Built in: a hidden spam trap. If a message fails, the browser console
-shows the reason Web3Forms gave.
+The small version label in the footer (for example `v9`) and
+`/health` show which release Railway is serving. If the label is older than
+the latest commit, Railway has not deployed it yet.

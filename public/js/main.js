@@ -268,6 +268,7 @@
       my = e.clientY;
       if (!body.classList.contains("cursor-visible")) { rx = mx; ry = my; body.classList.add("cursor-visible"); }
       dot.style.transform = "translate3d(" + mx + "px," + my + "px,0)";
+      ring.style.transform = "translate3d(" + mx + "px," + my + "px,0) scale(" + scale.toFixed(3) + ")";
     }, { passive: true });
     doc.addEventListener("pointerover", function (e) {
       var t = e.target;
@@ -284,9 +285,8 @@
     (function follow(t) {
       var dt = lastT ? Math.min(64, (t || 16) - lastT) : 16;
       lastT = t || 0;
-      var k = reduce ? 1 : 1 - Math.pow(0.25, dt / 16.7);
-      rx += (mx - rx) * k;
-      ry += (my - ry) * k;
+      rx = mx;
+      ry = my;
       scale += (targetScale - scale) * (reduce ? 1 : 1 - Math.pow(0.55, dt / 16.7));
       ring.style.transform = "translate3d(" + rx.toFixed(1) + "px," + ry.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
       requestAnimationFrame(follow);
@@ -419,39 +419,37 @@
       setState("busy");
       setNote("Sending your message…", "");
       if (data.company) { setState("sent"); setNote("Thanks. Your message is in my inbox.", "ok"); form.reset(); return; }
-      var keyMeta = $('meta[name="web3forms-key"]');
-      var key = keyMeta ? keyMeta.getAttribute("content") : "";
-      if (!key || key.indexOf("__") === 0) {
-        if (window.console) console.warn("Contact form: WEB3FORMS_KEY is not set in Railway Variables.");
-        setState("idle");
-        setNote("Your message didn\u2019t send. Please <a href=\"" + mailtoFallback(data) + "\">email it to me instead</a> (sage1webdev@gmail.com).", "err");
-        return;
-      }
-      fetch("https://api.web3forms.com/submit", {
+      fetch("https://formsubmit.co/ajax/sage1webdev@gmail.com", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          access_key: key,
-          subject: "New SageSyncs enquiry from " + data.name + " (" + data.type + ")",
-          from_name: "SageSyncs website",
-          name: data.name,
-          email: data.email,
-          replyto: data.email,
-          business_type: data.type,
-          message: data.week,
-          botcheck: false
+          _subject: "New SageSyncs enquiry from " + data.name + " (" + data.type + ")",
+          _replyto: data.email,
+          _template: "table",
+          _captcha: "false",
+          Name: data.name,
+          Email: data.email,
+          "Business type": data.type,
+          "What takes up most of their week": data.week
         })
       })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { status: r.status, body: b }; }); })
         .then(function (res) {
-          if (res.body && res.body.success) {
+          var ok = res.body && (res.body.success === true || res.body.success === "true");
+          var msg = String((res.body && res.body.message) || "");
+          if (!ok && /activat/i.test(msg)) {
+            setState("idle");
+            setNote("Almost there: FormSubmit has emailed sage1webdev@gmail.com an \u201cActivate Form\u201d link. Click it once, then send this message again.", "err");
+            return;
+          }
+          if (ok) {
             setState("sent");
             setNote("Thanks, " + String(data.name).split(" ")[0].replace(/[<>&]/g, "") + ". Your message is in my inbox and I’ll reply within 24 hours.", "ok");
             form.reset();
             return;
           }
           setState("idle");
-          if (window.console) console.warn("Contact form: Web3Forms said", res.status, res.body && res.body.message);
+          if (window.console) console.warn("Contact form:", res.status, msg);
           if (res.status === 400 && !(res.body && res.body.message)) {
             setNote("Please check your name, email and message, then try again.", "err");
           } else if (res.status === 429) {
