@@ -165,13 +165,13 @@
     }
     function resize() {
       var r = canvas.getBoundingClientRect();
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       w = r.width;
       h = r.height;
       canvas.width = Math.max(1, Math.round(w * dpr));
       canvas.height = Math.max(1, Math.round(h * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var count = Math.min(110, Math.round((w * h) / 11000));
+      var count = Math.min(70, Math.round((w * h) / 15000));
       while (nodes.length < count) nodes.push(make());
       nodes.length = count;
     }
@@ -213,12 +213,11 @@
       }
       for (var k = 0; k < nodes.length; k++) {
         var n = nodes[k];
+        ctx.fillStyle = "rgba(" + n.c + ",0.16)";
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3.2, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "rgba(" + n.c + ",0.95)";
-        ctx.shadowColor = "rgba(" + n.c + ",0.9)";
-        ctx.shadowBlur = 10;
         ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.shadowBlur = 0;
     }
     function loop() {
       if (!running) return;
@@ -281,22 +280,32 @@
     window.addEventListener("pointerdown", function () { targetScale = 0.7; });
     window.addEventListener("pointerup", function () { targetScale = ring.classList.contains("hover") ? 1.7 : 1; });
     doc.documentElement.addEventListener("pointerleave", function () { body.classList.remove("cursor-visible"); });
-    (function follow() {
-      var k = reduce ? 1 : 0.42;
+    var lastT = 0;
+    (function follow(t) {
+      var dt = lastT ? Math.min(64, (t || 16) - lastT) : 16;
+      lastT = t || 0;
+      var k = reduce ? 1 : 1 - Math.pow(0.25, dt / 16.7);
       rx += (mx - rx) * k;
       ry += (my - ry) * k;
-      scale += (targetScale - scale) * (reduce ? 1 : 0.35);
+      scale += (targetScale - scale) * (reduce ? 1 : 1 - Math.pow(0.55, dt / 16.7));
       ring.style.transform = "translate3d(" + rx.toFixed(1) + "px," + ry.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
       requestAnimationFrame(follow);
-    })();
+    })(0);
 
     /* glow inside glass cards follows the mouse */
+    var glowEvt = null;
     doc.addEventListener("pointermove", function (e) {
-      var card = e.target.closest && e.target.closest(".card");
-      if (!card) return;
-      var r = card.getBoundingClientRect();
-      card.style.setProperty("--mx", (e.clientX - r.left) + "px");
-      card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      if (glowEvt) { glowEvt = e; return; }
+      glowEvt = e;
+      requestAnimationFrame(function () {
+        var ev = glowEvt;
+        glowEvt = null;
+        var card = ev.target.closest && ev.target.closest(".card");
+        if (!card) return;
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (ev.clientX - r.left) + "px");
+        card.style.setProperty("--my", (ev.clientY - r.top) + "px");
+      });
     }, { passive: true });
 
     /* magnetic buttons */
