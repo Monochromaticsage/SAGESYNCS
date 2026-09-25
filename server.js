@@ -42,7 +42,9 @@ function resolve(urlPath) {
 
 function send(res, status, file) {
   const ext = path.extname(file).toLowerCase();
-  const cache = ext === ".html" ? "no-cache" : "public, max-age=604800";
+  // HTML, CSS and JS are re-checked on every visit so updates show at once.
+  // Pages link CSS/JS with a ?v= content hash, so each change is a new URL anyway.
+  const cache = [".html", ".css", ".js"].includes(ext) ? "no-cache" : "public, max-age=604800";
   res.writeHead(status, {
     "Content-Type": TYPES[ext] || "application/octet-stream",
     "Cache-Control": cache,
