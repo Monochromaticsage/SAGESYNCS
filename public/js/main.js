@@ -151,7 +151,7 @@
     var h = 0;
     var running = false;
     var pointer = { x: -9999, y: -9999 };
-    var palette = ["90,225,255", "90,225,255", "90,225,255", "90,225,255", "90,225,255", "205,175,255", "205,175,255", "255,213,74"];
+    var palette = ["90,225,255", "90,225,255", "90,225,255", "90,225,255", "205,175,255", "255,213,74", "255,213,74", "255,213,74"];
 
     function make() {
       return {
@@ -207,7 +207,7 @@
         }
         var md = Math.sqrt((pointer.x - a.x) * (pointer.x - a.x) + (pointer.y - a.y) * (pointer.y - a.y));
         if (md < 200) {
-          ctx.strokeStyle = "rgba(205,175,255," + ((1 - md / 200) * 0.7).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(255,213,74," + ((1 - md / 200) * 0.75).toFixed(3) + ")";
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
         }
       }
@@ -282,10 +282,10 @@
     window.addEventListener("pointerup", function () { targetScale = ring.classList.contains("hover") ? 1.7 : 1; });
     doc.documentElement.addEventListener("pointerleave", function () { body.classList.remove("cursor-visible"); });
     (function follow() {
-      var k = reduce ? 1 : 0.18;
+      var k = reduce ? 1 : 0.42;
       rx += (mx - rx) * k;
       ry += (my - ry) * k;
-      scale += (targetScale - scale) * (reduce ? 1 : 0.2);
+      scale += (targetScale - scale) * (reduce ? 1 : 0.35);
       ring.style.transform = "translate3d(" + rx.toFixed(1) + "px," + ry.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
       requestAnimationFrame(follow);
     })();
