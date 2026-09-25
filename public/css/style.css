@@ -439,6 +439,12 @@ em { font-style: normal; color: var(--cyan); }
 .foot-links a:hover, .foot-contact a:not(.btn):hover { color: var(--cyan); }
 .foot-contact { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .foot-social { display: flex; gap: 20px; }
+.social { display: flex; gap: 12px; }
+.social a { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: var(--white); background: var(--glass-2); border: 1px solid var(--line-strong); transition: color 0.25s, border-color 0.25s, box-shadow 0.25s, translate 0.25s var(--ease), background-color 0.25s; }
+.social a:hover { color: var(--sun); border-color: var(--sun); background: rgba(255, 213, 74, 0.1); box-shadow: 0 0 22px rgba(255, 213, 74, 0.45); translate: 0 -3px; }
+.social.lg { justify-content: center; gap: 16px; }
+.social.lg a { width: 56px; height: 56px; }
+.social.lg svg { scale: 1.15; }
 .foot-bottom { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 
 /* ---------- cursor follower ---------- */
