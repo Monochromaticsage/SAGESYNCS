@@ -76,6 +76,6 @@ To change the receiving address, edit the `formsubmit.co/ajax/...` URL in
 
 ## Checking what is live
 
-The small version label in the footer (for example `v10`) and
+The small version label in the footer (for example `v11`) and
 `/health` show which release Railway is serving. If the label is older than
 the latest commit, Railway has not deployed it yet.

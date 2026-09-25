@@ -130,7 +130,7 @@ em { font-style: normal; color: var(--cyan); }
   border-bottom: 1px solid transparent;
   transition: translate 0.45s var(--ease), background-color 0.35s, border-color 0.35s, -webkit-backdrop-filter 0.35s, backdrop-filter 0.35s;
 }
-.nav.glass { background: rgba(7, 5, 46, 0.72); border-bottom-color: var(--line); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.nav.glass { background: rgba(7, 5, 46, 0.92); border-bottom-color: var(--line); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .nav.away { translate: 0 -110%; }
 .nav-in { height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -582,3 +582,45 @@ main { animation: pageIn 0.6s var(--ease) both; }
 .mail-x { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
 .mail-x:hover { color: #fff; }
 @media (prefers-reduced-motion: reduce) { .mail-menu, .mail-card { transition: none; } }
+
+/* ---------- light sections: a bright break between the dark ones ---------- */
+.light {
+  --white: #120c4a;
+  --lav: #463f86;
+  --muted: #5f5896;
+  --cyan: #5a1fd1;
+  --line: rgba(30, 20, 120, 0.12);
+  --line-strong: rgba(30, 20, 120, 0.2);
+  --glass-2: rgba(30, 20, 120, 0.06);
+  --ink: #ffffff;
+  color: var(--white);
+  color-scheme: light;
+  background:
+    radial-gradient(900px 420px at 12% 0%, rgba(255, 213, 74, 0.22), transparent 60%),
+    radial-gradient(800px 460px at 92% 100%, rgba(120, 40, 230, 0.14), transparent 60%),
+    linear-gradient(180deg, #f8f6ff, #eee8ff);
+}
+.light + .section { padding-top: clamp(80px, 10vw, 128px) !important; }
+.light .eyebrow { display: inline-block; align-self: flex-start; padding: 6px 14px; border-radius: 999px; background: var(--sun); color: #1a1340; letter-spacing: 0.18em; }
+.light .sec-head.center .eyebrow { align-self: center; }
+.light.grid-bg::before { background-image: linear-gradient(rgba(30, 20, 120, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 20, 120, 0.06) 1px, transparent 1px); }
+.light .card { background: #ffffff; border-color: rgba(30, 20, 120, 0.1); box-shadow: 0 12px 36px rgba(30, 20, 120, 0.08); }
+.light .card:hover { border-color: var(--sun); box-shadow: 0 22px 56px rgba(30, 20, 120, 0.14), 0 0 0 1px var(--sun); }
+.light .card::before { background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 213, 74, 0.2), transparent 60%); }
+.light .icon-box.soft { background: rgba(255, 213, 74, 0.28); border-color: rgba(214, 160, 0, 0.45); color: #1a1340; }
+.light .pipe, .light .steps-line { background: rgba(30, 20, 120, 0.1); }
+.light .pipe-fill, .light .steps-fill { box-shadow: none; }
+.light .step-num { background: #fff; border-color: rgba(30, 20, 120, 0.18); box-shadow: 0 8px 24px rgba(30, 20, 120, 0.08); }
+.light .step.lit .step-num { border-color: #5a1fd1; color: #5a1fd1; box-shadow: 0 0 0 6px rgba(255, 213, 74, 0.35); }
+.light .plus::before, .light .plus::after { background: #5a1fd1; }
+.light .faq-item.open .faq-q { color: #5a1fd1; }
+.light .case .result .k { color: #9a6a00; }
+.light .flow em { color: #b07a00; }
+.light .belief .hl { color: #5a1fd1; text-shadow: none; background: linear-gradient(transparent 62%, rgba(255, 213, 74, 0.7) 62%); }
+.light .split em, .light em { text-shadow: none; }
+.cursor-light .cursor-dot { background: #5a1fd1; box-shadow: 0 0 10px rgba(90, 31, 209, 0.55); }
+.cursor-light .cursor-ring { border-color: rgba(90, 31, 209, 0.7); }
+.cursor-light .cursor-ring.hover { border-color: #e0a800; background: rgba(255, 213, 74, 0.3); }
+.light .flow span { animation-name: chipFlowLight; }
+@keyframes chipFlowLight { 0%, 16% { background: var(--sun); color: #1a1340; box-shadow: 0 6px 18px rgba(214, 160, 0, 0.35); } 24%, 100% { background: rgba(30, 20, 120, 0.07); color: #120c4a; box-shadow: none; } }
+.light .icon-box.soft, .light .icon-box.soft svg { color: #7a4f00; stroke: currentColor; }

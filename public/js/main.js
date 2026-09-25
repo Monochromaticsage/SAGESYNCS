@@ -274,6 +274,7 @@
       var t = e.target;
       if (!t || !t.closest) return;
       body.classList.toggle("cursor-typing", !!t.closest("input, textarea"));
+      body.classList.toggle("cursor-light", !!t.closest(".light"));
       var hot = !!t.closest("a, button, select, label, [data-cursor]");
       ring.classList.toggle("hover", hot);
       targetScale = hot ? 1.7 : 1;
