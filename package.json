@@ -1,0 +1,13 @@
+{
+  "name": "sagesyncs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SageSyncs website: AI automation for real estate agents",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
