@@ -13,6 +13,7 @@ const HOST = "0.0.0.0";
 // The access key lives in Railway (Service → Variables → WEB3FORMS_KEY) and is
 // written into the contact page when it is served. It is never committed.
 const WEB3FORMS_KEY = String(process.env.WEB3FORMS_KEY || "").replace(/[^A-Za-z0-9-]/g, "");
+const VERSION = "2026-09-25.8";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -65,6 +66,17 @@ function send(res, status, file) {
 
 http
   .createServer((req, res) => {
+    if ((req.url || "").split("?")[0] === "/health") {
+      // Safe to share: shows which commit is live and whether the form key is set, never the key itself.
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(JSON.stringify({
+        status: "ok",
+        version: VERSION,
+        commit: String(process.env.RAILWAY_GIT_COMMIT_SHA || "").slice(0, 7) || "unknown",
+        formKeySet: WEB3FORMS_KEY.length > 0,
+        formKeyLength: WEB3FORMS_KEY.length,
+      }, null, 2));
+    }
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405, { Allow: "GET, HEAD" });
       return res.end();
