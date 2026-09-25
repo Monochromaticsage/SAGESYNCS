@@ -62,6 +62,23 @@ server.js           Static server for Railway
 
 ## Contact form
 
-The form opens the visitor's own email app with their message filled in,
-addressed to sage1webdev@gmail.com. It needs no backend. To receive
-messages without the visitor's email app, connect a form service later.
+The form posts to the site's own server (`/api/contact`), which forwards
+the message to [Web3Forms](https://web3forms.com). Web3Forms emails it to
+you, with the visitor's address set as reply-to.
+
+**One-time setup:**
+
+1. Go to [web3forms.com](https://web3forms.com), enter
+   `sage1webdev@gmail.com` and create an access key. It is emailed to you.
+2. In Railway, open the service → **Variables** → **New Variable**:
+   - Name: `WEB3FORMS_KEY`
+   - Value: the key from the email
+3. Railway redeploys. Send yourself a test message from the Contact page.
+
+Never commit the key to this repository.
+
+Until the key is set, the form says the message didn't send and offers a
+link to email it instead, so no enquiry is silently lost.
+
+Built in: a hidden spam trap, a limit of 5 messages per visitor per 10
+minutes, and a 10 KB size cap.

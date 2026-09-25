@@ -376,24 +376,61 @@
     });
   });
 
-  /* ---------- contact form: opens the visitor's email app ---------- */
+  /* ---------- contact form: sends through the site's own server ---------- */
   var form = $("[data-contact]");
   if (form) {
+    var submitBtn = $(".submit", form);
+    var note = $(".form-note", form);
+    var defaultNote = note ? note.innerHTML : "";
+    function setNote(html, cls) {
+      if (!note) return;
+      note.innerHTML = html;
+      note.className = "form-note" + (cls ? " " + cls : "");
+    }
+    function setState(state) {
+      if (!submitBtn) return;
+      submitBtn.classList.toggle("busy", state === "busy");
+      submitBtn.classList.toggle("sent", state === "sent");
+      submitBtn.disabled = state === "busy" || state === "sent";
+    }
+    function mailtoFallback(data) {
+      var subject = "New enquiry from " + data.name + " (" + data.type + ")";
+      var text = "Name: " + data.name + "\nEmail: " + data.email + "\nBusiness type: " + data.type + "\n\nWhat takes up most of my week:\n" + data.week;
+      return "mailto:sage1webdev@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+    }
+    form.addEventListener("input", function () {
+      if (submitBtn && submitBtn.classList.contains("sent")) return;
+      if (note && note.classList.contains("err")) setNote(defaultNote, "");
+    });
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (!form.reportValidity()) return;
-      var data = new FormData(form);
-      var subject = "New enquiry from " + data.get("name") + " (" + data.get("type") + ")";
-      var text = "Name: " + data.get("name") + "\nEmail: " + data.get("email") + "\nBusiness type: " + data.get("type") +
-        "\n\nWhat takes up most of my week:\n" + data.get("week");
-      var btn = $(".submit", form);
-      var note = $(".form-note", form);
-      if (btn) btn.classList.add("sent");
-      if (note) {
-        note.textContent = "Your email app is opening with your message ready. Press send there and I'll reply within 24 hours.";
-        note.classList.add("ok");
-      }
-      window.location.href = "mailto:sage1webdev@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+      var fd = new FormData(form);
+      var data = { name: fd.get("name"), email: fd.get("email"), type: fd.get("type"), week: fd.get("week"), company: fd.get("company") };
+      setState("busy");
+      setNote("Sending your message…", "");
+      fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { status: r.status, body: b }; }); })
+        .then(function (res) {
+          if (res.status === 200 && res.body.ok) {
+            setState("sent");
+            setNote("Thanks, " + String(data.name).split(" ")[0].replace(/[<>&]/g, "") + ". Your message is in my inbox and I’ll reply within 24 hours.", "ok");
+            form.reset();
+            return;
+          }
+          setState("idle");
+          if (res.status === 400) {
+            setNote("Please check your name, email and message, then try again.", "err");
+          } else if (res.status === 429) {
+            setNote("That’s a few messages in a row. Please wait a few minutes, or email me at <a href=\"mailto:sage1webdev@gmail.com\">sage1webdev@gmail.com</a>.", "err");
+          } else {
+            setNote("Your message didn’t send. Please <a href=\"" + mailtoFallback(data) + "\">email it to me instead</a> (sage1webdev@gmail.com).", "err");
+          }
+        })
+        .catch(function () {
+          setState("idle");
+          setNote("Your message didn’t send. Please <a href=\"" + mailtoFallback(data) + "\">email it to me instead</a> (sage1webdev@gmail.com).", "err");
+        });
     });
   }
 
