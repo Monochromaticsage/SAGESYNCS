@@ -150,14 +150,23 @@ body.live .stage-note{display:none}
 .progress button.done span{background:var(--signal)}
 .progress button.now span{background:var(--hud-ink)}
 
-.phone{position:absolute;right:16px;top:calc(env(safe-area-inset-top,0px) + 92px);width:min(300px,64vw);
-  background:var(--hud-bg);border-radius:22px;padding:.8rem;pointer-events:auto;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.phone{position:absolute;right:16px;top:calc(env(safe-area-inset-top,0px) + 92px);width:min(330px,64vw);
+  max-height:calc(100svh - 160px);display:flex;flex-direction:column;
+  background:#F7F7FB;color:#1C1F3B;border-radius:30px;padding:0;pointer-events:auto;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);border:6px solid #11142E}
 .phone[hidden]{display:none}
-.phone-head{font-size:.75rem;color:var(--hud-muted);text-align:center;margin-bottom:.5rem}
-.msg{font-size:.86rem;line-height:1.35;padding:.5rem .7rem;border-radius:16px;margin:.3rem 0;max-width:88%}
-.msg.me{background:#3B4BA3;margin-left:auto;border-bottom-right-radius:5px}
-.msg.biz{background:#F2F2FB;color:#1C1F3B;border-bottom-left-radius:5px}
-.msg.biz b{display:block;font-size:.7rem;color:#565B84}
+.phone-head{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.8rem .8rem .6rem;background:#ECECF4;border-bottom:1px solid #DCDDEE;font-size:.78rem;color:#1C1F3B}
+.phone-head .ph-avatar{width:34px;height:34px;border-radius:50%;background:#2F3D86;color:#fff;display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.phone-head small{color:#565B84;font-size:.7rem}
+#phoneMsgs{padding:.9rem .8rem 1rem;overflow-y:auto;display:flex;flex-direction:column;gap:.55rem;scroll-behavior:smooth}
+.ph-time{align-self:center;font-size:.68rem;color:#7A7FA6;margin:.1rem 0}
+.msg{font-size:.88rem;line-height:1.4;padding:.6rem .85rem;border-radius:18px;max-width:80%}
+.msg.me{background:#2F6BFF;color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.msg.biz{background:#E4E5EF;color:#1C1F3B;align-self:flex-start;border-bottom-left-radius:6px}
+.msg.typing{display:flex;gap:4px;align-items:center;padding:.75rem .9rem}
+.msg.typing i{width:7px;height:7px;border-radius:50%;background:#8A8FB5;animation:blink 1s infinite}
+.msg.typing i:nth-child(2){animation-delay:.15s}.msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
 .msg.new{animation:pop .35s ease-out}
 @keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.msg.new{animation:none}}
@@ -178,8 +187,8 @@ body.live .stage-note{display:none}
 @media (max-width:720px){
   .hud-brand{display:none}
   .drag-hint{display:none}
-  .phone{width:min(270px,70vw)}
-  #hud.panel-scene .phone{display:none}
+  .phone{width:min(280px,72vw);max-height:44svh;border-width:4px}
+  #hud.panel-scene .phone{max-height:30svh}
   .caption{left:12px;width:calc(100% - 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
 }
 .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;color:#E9EAF7;font-size:1rem}
@@ -288,7 +297,7 @@ body.live .stage-note{display:none}
     <button class="hud-icon" id="exitBtn" type="button" aria-label="Exit demo">✕</button>
   </div>
   <div class="progress" id="progress" aria-label="Scenes"></div>
-  <div class="phone" id="phone" hidden><div class="phone-head" id="phoneHead"></div><div id="phoneMsgs"></div></div>
+  <div class="phone" id="phone" hidden><div class="phone-head" id="phoneHead"></div><div id="phoneMsgs" aria-live="polite"></div></div>
   <div class="drag-hint">Drag to look around</div>
   <div class="caption" aria-live="polite">
     <p class="cap-time" id="capTime"></p>
@@ -322,7 +331,9 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const INDUSTRIES = {
   home:{name:"Linda",ask:"My water heater just quit. Can someone come out tomorrow?",reply:"Sorry to hear that, Linda. Yes, we have a tech free tomorrow morning. Is it gas or electric, and roughly how old?",quals:["Gas, about 12 years old","Inside service area","Wants it fixed tomorrow"],slot:"Tech visit, Wed 8:00 AM"},
-  realestate:{name:"Dana",ask:"Hi, is the 3-bed on Maple St still available? My lease ends next month and I have a dog.",reply:"Hi Dana, yes it is, and it has a fenced yard with dogs allowed. What price range are you hoping to stay within?",quals:["Budget around $400k","Moving within 30 days","Needs a yard"],slot:"Call with agent, Sat 10:00 AM"},
+  realestate:{name:"Dana",ask:"Hi, is the 3-bed on Maple St still available? My lease ends next month and I have a dog.",reply:"Hi Dana, yes it is, and it has a fenced yard with dogs allowed. What price range are you hoping to stay within?",quals:["Budget around $400k","Pre-approved","Move in before Dec 1"],slot:"Call with agent, Sat 10:00 AM",
+    qualify:[{me:"Around 400k."},{biz:"That works, it’s listed at $395,000. Are you pre-approved yet, or still talking to a lender?"},{me:"Pre-approved last week."},{biz:"Great. When would you ideally like to move in?"},{me:"Before December 1st."}],
+    book:[{biz:"Perfect, you’re a strong fit for Maple St. Want a quick call with the agent to go over it? Pick a time here: calendly.com/your-link"},{me:"Saturday at 10 works."},{biz:"You’re booked: call with the agent, Sat 10:00 AM. Reply here if anything changes."}]},
   law:{name:"Marcus",ask:"I was rear-ended tonight. Do you take cases like mine?",reply:"I’m sorry that happened, Marcus. Yes, we handle these. Were you hurt, and has an insurance claim been opened?",quals:["Injured, saw a doctor","Accident today","Claim opened"],slot:"Consult, Tue 9:30 AM"},
   rental:{name:"Ada",ask:"Is the lake house free July 3 to 6 for six of us?",reply:"It is, Ada. Here are the rates for those nights and a link to hold the dates. Any pets coming along?",quals:["6 guests","July 3 to 6","No pets"],slot:"Stay held, Fri 3:00 PM check-in"},
   clinic:{name:"Jess",ask:"Do you have anything Saturday for a facial?",reply:"We do, Jess. Two Saturday openings left. Is this your first visit with us?",quals:["New client","Facial","Saturdays only"],slot:"Appointment, Sat 11:00 AM"},
@@ -505,7 +516,7 @@ function panelBase(title, note){
 }
 function drawCRM(p){
   const g=pctx, { c, from, to } = panelArgs;
-  panelBase("Your pipeline", from===0 ? "11:51 PM" : "11:53 PM");
+  panelBase("Your pipeline", "11:49 PM");
   const cols=["New","Qualified","Booked"], x0=48, cw=293, gap=24, y=118, h=480;
   const colX = i => x0 + i*(cw+gap);
   cols.forEach((name,i) => {
@@ -592,10 +603,12 @@ function resolveCam(spec){
   }
   if (spec === "panel"){
     const vf = Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
-    const d = Math.max((PANEL_W/2*1.14)/(vf*a), (PANEL_H/2*1.75)/vf);
+    let d = Math.max((PANEL_W/2*1.14)/(vf*a), (PANEL_H/2*1.75)/vf);
+    if (a >= 1) d *= 1.3; // leave room on the right for the phone
     const dir = new THREE.Vector3(.12,.22,1).normalize();
     const visH = 2*d*vf;
-    return { pos:panel.position.clone().add(dir.multiplyScalar(d)), target:panel.position.clone().add(new THREE.Vector3(0,-visH*(a<1?.2:.08),0)) };
+    const shift = a >= 1 ? new THREE.Vector3(visH*a*0.16, 0, 0) : new THREE.Vector3();
+    return { pos:panel.position.clone().add(dir.multiplyScalar(d)).add(shift), target:panel.position.clone().add(new THREE.Vector3(0,-visH*(a<1?.2:.08),0)).add(shift) };
   }
   const target = new THREE.Vector3(...spec.target), pos = new THREE.Vector3(...spec.pos);
   if (a < 1){ pos.sub(target).multiplyScalar(1.6).add(target); }
@@ -653,16 +666,37 @@ const house0 = () => W.houses[0].userData.anchor;
 function setPhone(msgs){
   if (!msgs){ phone.hidden = true; return; }
   phone.hidden = false;
-  $("#phoneHead").textContent = `${C.c.name}’s phone`;
+  const head = $("#phoneHead"); head.innerHTML = "";
+  const av = document.createElement("span"); av.className = "ph-avatar"; av.textContent = (C.biz.trim()[0] || "S").toUpperCase();
+  const nm = document.createElement("b"); nm.textContent = C.biz;
+  const sub = document.createElement("small"); sub.textContent = `On ${C.c.name}’s phone · Text message`;
+  head.append(av, nm, sub);
   phoneMsgs.innerHTML = "";
+  const t = document.createElement("div"); t.className = "ph-time"; t.textContent = "Today 11:47 PM"; phoneMsgs.append(t);
   msgs.forEach(m => addMsg(m, false));
 }
+function scrollPhone(){ phoneMsgs.scrollTop = phoneMsgs.scrollHeight; }
 function addMsg(m, isNew=true){
   const d = document.createElement("div");
   d.className = "msg " + (m.me ? "me" : "biz") + (isNew ? " new" : "");
-  if (m.me) d.textContent = m.me;
-  else { const b=document.createElement("b"); b.textContent=C.biz; d.append(b, document.createTextNode(m.biz)); }
-  phoneMsgs.append(d);
+  d.textContent = m.me || m.biz;
+  phoneMsgs.append(d); scrollPhone();
+}
+/* Play messages one by one: the assistant "types" before each reply. */
+function play(seq, start=400, onDone){
+  let t = start;
+  seq.forEach((m, i) => {
+    if (m.biz){
+      later(t, () => { const ty = document.createElement("div"); ty.className = "msg biz typing"; ty.innerHTML = "<i></i><i></i><i></i>"; ty.dataset.typing = "1"; phoneMsgs.append(ty); scrollPhone(); });
+      t += 1100;
+      later(t, () => { phoneMsgs.querySelectorAll("[data-typing]").forEach(n => n.remove()); addMsg(m); chime(660,880); });
+    } else {
+      later(t, () => { addMsg(m); chime(520,700); });
+    }
+    t += m.biz ? 1500 : 1300;
+  });
+  if (onDone) later(t, onDone);
+  return t;
 }
 
 function SCENES(){
@@ -683,17 +717,17 @@ function SCENES(){
       title:"Answered in under a minute.",
       body:`Your assistant replies in your tone, using only listing details you approved, and asks the questions you’d ask. ${c.name} isn’t left waiting.`,
       state:{ office:true, lit:[0], panel:null, phone:[ask] },
-      enter(){ later(500, () => sendOrb(OFFICE_ANCHOR, house0(), 2000, () => { addMsg(reply); chime(); pulse(0); })); } },
-    { time:"11:51 PM", clock:"4 min", sky:"night", cam:"panel", dur:9500,
-      title:"Qualified and logged.",
-      body:`${c.name}’s budget, timeline and must-haves land in your CRM. Nobody retypes anything.`,
+      enter(){ later(300, () => sendOrb(OFFICE_ANCHOR, house0(), 2000, () => pulse(0))); play([reply], 900); } },
+    { time:"11:48 PM", clock:"2 min", sky:"night", cam:"panel", dur:12500,
+      title:"It asks the questions you would.",
+      body:`Budget, pre-approval, move-in date. One question at a time, like a good assistant. Each answer lands in your CRM as ${c.name} replies.`,
       state:{ office:true, lit:[0], panel:"crm", args:{c, from:0, to:1}, phone:[ask, reply] },
-      enter(){ sendOrb(house0(), OFFICE_ANCHOR, 1600); } },
-    { time:"11:53 PM", clock:"6 min", sky:"night", cam:"panel", dur:9500,
+      enter(){ sendOrb(house0(), OFFICE_ANCHOR, 1600); play(c.qualify, 500); } },
+    { time:"11:51 PM", clock:"4 min", sky:"night", cam:"panel", dur:9500,
       title:"Call booked while you slept.",
       body:`${c.name} picks a time on your calendar and you get a heads-up. You take the call in the morning, already knowing what she needs.`,
-      state:{ office:true, lit:[0], panel:"cal", args:{c}, phone:[ask, reply] },
-      enter(){ later(1300, () => { addMsg({ biz:`You’re booked: ${c.slot}. Reply here if anything changes.` }); chime(660,880); }); } },
+      state:{ office:true, lit:[0], panel:"cal", args:{c}, phone:[ask, reply, ...c.qualify] },
+      enter(){ play(c.book, 400); } },
     { time:"Optional add-on", clock:"later", sky:"day", cam:{pos:[-6,30,32],target:[0,0,-2]}, dur:10000,
       title:"Old leads get a check-in.",
       body:"An optional add-on: past leads who agreed to hear from you get a short, friendly follow-up. Anyone who replies goes into the same flow.",
