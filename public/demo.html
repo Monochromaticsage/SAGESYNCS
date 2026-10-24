@@ -160,9 +160,14 @@ body.live .stage-note{display:none}
 .phone-head small{color:#565B84;font-size:.7rem}
 #phoneMsgs{padding:.9rem .8rem 1rem;overflow-y:auto;display:flex;flex-direction:column;gap:.55rem;scroll-behavior:smooth}
 .ph-time{align-self:center;font-size:.68rem;color:#7A7FA6;margin:.1rem 0}
+#phoneMsgs > *{flex-shrink:0}
 .msg{font-size:.88rem;line-height:1.4;padding:.6rem .85rem;border-radius:18px;max-width:80%}
 .msg.me{background:#2F6BFF;color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
 .msg.biz{background:#E4E5EF;color:#1C1F3B;align-self:flex-start;border-bottom-left-radius:6px}
+.msg.link{background:#fff;border:1px solid #DCDDEE;padding:0;overflow:hidden;min-width:70%}
+.msg.link .lk-top{background:#2F3D86;color:#fff;font-weight:700;font-size:.8rem;padding:.55rem .8rem}
+.msg.link .lk-bot{padding:.5rem .8rem;font-size:.75rem;color:#565B84}
+.ph-note{align-self:center;max-width:90%;text-align:center;font-size:.72rem;line-height:1.4;color:#2A6B45;background:#E3F5EA;border-radius:10px;padding:.45rem .7rem}
 .msg.typing{display:flex;gap:4px;align-items:center;padding:.75rem .9rem}
 .msg.typing i{width:7px;height:7px;border-radius:50%;background:#8A8FB5;animation:blink 1s infinite}
 .msg.typing i:nth-child(2){animation-delay:.15s}.msg.typing i:nth-child(3){animation-delay:.3s}
@@ -333,7 +338,7 @@ const INDUSTRIES = {
   home:{name:"Linda",ask:"My water heater just quit. Can someone come out tomorrow?",reply:"Sorry to hear that, Linda. Yes, we have a tech free tomorrow morning. Is it gas or electric, and roughly how old?",quals:["Gas, about 12 years old","Inside service area","Wants it fixed tomorrow"],slot:"Tech visit, Wed 8:00 AM"},
   realestate:{name:"Dana",ask:"Hi, is the 3-bed on Maple St still available? My lease ends next month and I have a dog.",reply:"Hi Dana, yes it is, and it has a fenced yard with dogs allowed. What price range are you hoping to stay within?",quals:["Budget around $400k","Pre-approved","Move in before Dec 1"],slot:"Call with agent, Sat 10:00 AM",
     qualify:[{me:"Around 400k."},{biz:"That works, it’s listed at $395,000. Are you pre-approved yet, or still talking to a lender?"},{me:"Pre-approved last week."},{biz:"Great. When would you ideally like to move in?"},{me:"Before December 1st."}],
-    book:[{biz:"Perfect, you’re a strong fit for Maple St. Want a quick call with the agent to go over it? Pick a time here: calendly.com/your-link"},{me:"Saturday at 10 works."},{biz:"You’re booked: call with the agent, Sat 10:00 AM. Reply here if anything changes."}]},
+    book:[{biz:"Perfect, you’re a strong fit for Maple St. Want a quick call with the agent? Pick any time that suits you here:"},{link:"Book a call with the agent"},{note:"Dana picks Sat 10:00 AM on the booking page and enters her name and email. The calendar invite goes to her inbox."},{biz:"You’re all set for Saturday at 10:00 AM. The agent will call you on this number. Reply here if anything changes."}]},
   law:{name:"Marcus",ask:"I was rear-ended tonight. Do you take cases like mine?",reply:"I’m sorry that happened, Marcus. Yes, we handle these. Were you hurt, and has an insurance claim been opened?",quals:["Injured, saw a doctor","Accident today","Claim opened"],slot:"Consult, Tue 9:30 AM"},
   rental:{name:"Ada",ask:"Is the lake house free July 3 to 6 for six of us?",reply:"It is, Ada. Here are the rates for those nights and a link to hold the dates. Any pets coming along?",quals:["6 guests","July 3 to 6","No pets"],slot:"Stay held, Fri 3:00 PM check-in"},
   clinic:{name:"Jess",ask:"Do you have anything Saturday for a facial?",reply:"We do, Jess. Two Saturday openings left. Is this your first visit with us?",quals:["New client","Facial","Saturdays only"],slot:"Appointment, Sat 11:00 AM"},
@@ -678,8 +683,18 @@ function setPhone(msgs){
 function scrollPhone(){ phoneMsgs.scrollTop = phoneMsgs.scrollHeight; }
 function addMsg(m, isNew=true){
   const d = document.createElement("div");
-  d.className = "msg " + (m.me ? "me" : "biz") + (isNew ? " new" : "");
-  d.textContent = m.me || m.biz;
+  if (m.note){
+    d.className = "ph-note" + (isNew ? " msg new" : ""); d.style.maxWidth = "90%";
+    d.textContent = "✓ " + m.note;
+  } else if (m.link){
+    d.className = "msg biz link" + (isNew ? " new" : "");
+    const top = document.createElement("div"); top.className = "lk-top"; top.textContent = "📅 " + m.link;
+    const bot = document.createElement("div"); bot.className = "lk-bot"; bot.textContent = "calendly.com · Pick a time";
+    d.append(top, bot);
+  } else {
+    d.className = "msg " + (m.me ? "me" : "biz") + (isNew ? " new" : "");
+    d.textContent = m.me || m.biz;
+  }
   phoneMsgs.append(d); scrollPhone();
 }
 /* Play messages one by one: the assistant "types" before each reply. */
@@ -690,10 +705,16 @@ function play(seq, start=400, onDone){
       later(t, () => { const ty = document.createElement("div"); ty.className = "msg biz typing"; ty.innerHTML = "<i></i><i></i><i></i>"; ty.dataset.typing = "1"; phoneMsgs.append(ty); scrollPhone(); });
       t += 1100;
       later(t, () => { phoneMsgs.querySelectorAll("[data-typing]").forEach(n => n.remove()); addMsg(m); chime(660,880); });
+    } else if (m.link){
+      t -= 900;
+      later(t, () => addMsg(m));
+    } else if (m.note){
+      t += 600;
+      later(t, () => { addMsg(m); chime(700,1050); });
     } else {
       later(t, () => { addMsg(m); chime(520,700); });
     }
-    t += m.biz ? 1500 : 1300;
+    t += m.biz ? 1500 : m.note ? 2200 : 1300;
   });
   if (onDone) later(t, onDone);
   return t;
@@ -723,9 +744,9 @@ function SCENES(){
       body:`Budget, pre-approval, move-in date. One question at a time, like a good assistant. Each answer lands in your CRM as ${c.name} replies.`,
       state:{ office:true, lit:[0], panel:"crm", args:{c, from:0, to:1}, phone:[ask, reply] },
       enter(){ sendOrb(house0(), OFFICE_ANCHOR, 1600); play(c.qualify, 500); } },
-    { time:"11:51 PM", clock:"4 min", sky:"night", cam:"panel", dur:9500,
+    { time:"11:51 PM", clock:"4 min", sky:"night", cam:"panel", dur:12500,
       title:"Call booked while you slept.",
-      body:`${c.name} picks a time on your calendar and you get a heads-up. You take the call in the morning, already knowing what she needs.`,
+      body:`The assistant sends your booking link. ${c.name} picks a time and enters her email there, and the invite goes out automatically. You get a heads-up and take the call already knowing what she needs.`,
       state:{ office:true, lit:[0], panel:"cal", args:{c}, phone:[ask, reply, ...c.qualify] },
       enter(){ play(c.book, 400); } },
     { time:"Optional add-on", clock:"later", sky:"day", cam:{pos:[-6,30,32],target:[0,0,-2]}, dur:10000,
