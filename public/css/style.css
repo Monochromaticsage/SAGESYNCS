@@ -528,8 +528,13 @@ main { animation: pageIn 0.6s var(--ease) both; }
 @media (max-width: 1080px) {
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pipe { display: none; }
-  .hero-grid { grid-template-columns: 1fr; }
-  .hero-visual { max-width: 480px; margin-top: 24px; }
+  .hero-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 24px; }
+  .hero .h-hero { font-size: clamp(40px, 5.6vw, 60px); }
+  .hero-copy { gap: 22px; }
+  .hero-visual { max-width: 420px; }
+  .chip { font-size: 13px; padding: 10px 13px; gap: 8px; border-radius: 13px; }
+  .chip.c2 { left: -6%; }
+  .chip.c1, .chip.c3 { right: -2%; }
   .cases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .case, .case.wide { grid-column: span 1; }
 }
@@ -543,6 +548,14 @@ main { animation: pageIn 0.6s var(--ease) both; }
   .foot-top { grid-template-columns: 1fr 1fr; }
   .foot-top > :first-child { grid-column: 1 / -1; }
   .work-line { display: none; }
+}
+@media (max-width: 860px) {
+  .hero { padding-bottom: 56px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 8px; }
+  .hero .h-hero { font-size: clamp(38px, 10.5vw, 58px); }
+  .hero-visual { justify-self: center; max-width: 360px; margin-top: 4px; }
+  .chip.c2 { left: -4%; }
+  .chip.c1, .chip.c3 { right: -4%; }
 }
 @media (max-width: 560px) {
   :root { --nav-h: 72px; }
